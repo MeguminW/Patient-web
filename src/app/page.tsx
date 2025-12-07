@@ -5,16 +5,16 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '@/components/shared/Logo'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, MapPin, Clock, Phone, Check } from 'lucide-react'
+import { ChevronDown, MapPin, Clock, Phone, Check, Navigation, X } from 'lucide-react'
 
 function QueueStatusContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Fixed demo data - always #5 with 4 people ahead, 45min wait
+  // Fixed demo data - #5 with 4 people ahead, ~35min wait
   const [queueData, setQueueData] = useState({
     queueNumber: 5,
-    estimatedWait: 45,
+    estimatedWait: 35,
     patientsAhead: 4,
     status: 'waiting' as 'waiting' | 'almost' | 'ready',
     intakeCompleted: false,
@@ -29,6 +29,8 @@ function QueueStatusContent() {
   }, [searchParams])
 
   const [showClinicInfo, setShowClinicInfo] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  const [hasLeftQueue, setHasLeftQueue] = useState(false)
 
   // Status-based styling
   const getStatusConfig = () => {
@@ -117,10 +119,10 @@ function QueueStatusContent() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
-            {/* Queue Position */}
+            {/* Queue Number */}
             <div className="text-center mb-8">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-neutral-400 mb-3">
-                Your Position
+                Your Number
               </p>
               <div className="text-8xl font-bold text-black tabular-nums tracking-tighter leading-none mb-2">
                 #{queueData.queueNumber}
@@ -351,8 +353,157 @@ function QueueStatusContent() {
             </AnimatePresence>
           </motion.div>
 
+          {/* ACTION BUTTONS */}
+          <motion.div
+            className="flex gap-3 pt-2"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+          >
+            <a
+              href="https://maps.google.com/?q=50+Sportsworld+Crossing+Road+E1-03+Kitchener+ON"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 h-14 flex items-center justify-center gap-2 bg-white border border-neutral-200 rounded-2xl text-sm font-semibold text-neutral-700 hover:bg-neutral-50 active:scale-[0.98] transition-all"
+            >
+              <Navigation className="w-4 h-4" />
+              Directions
+            </a>
+            <button
+              onClick={() => setShowLeaveConfirm(true)}
+              className="flex-1 h-14 flex items-center justify-center gap-2 bg-white border border-red-200 rounded-2xl text-sm font-semibold text-red-600 hover:bg-red-50 active:scale-[0.98] transition-all"
+            >
+              <X className="w-4 h-4" />
+              Leave Queue
+            </button>
+          </motion.div>
+
         </div>
       </div>
+
+      {/* LEAVE QUEUE CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showLeaveConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowLeaveConfirm(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            {/* Modal */}
+            <motion.div
+              className="relative bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 pb-10 sm:pb-6 sm:mx-4"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+            >
+              {/* Handle (mobile) */}
+              <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-6 sm:hidden" />
+
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <X className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-neutral-900 mb-2">Leave Queue?</h3>
+                <p className="text-neutral-500 leading-relaxed">
+                  Are you sure you want to leave? You'll lose your position and will need to check in again.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLeaveConfirm(false)}
+                  className="flex-1 h-14 bg-neutral-100 rounded-2xl text-sm font-semibold text-neutral-700 hover:bg-neutral-200 active:scale-[0.98] transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowLeaveConfirm(false)
+                    setHasLeftQueue(true)
+                  }}
+                  className="flex-1 h-14 bg-red-500 rounded-2xl text-sm font-semibold text-white hover:bg-red-600 active:scale-[0.98] transition-all"
+                >
+                  Leave Queue
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* LEFT QUEUE SUCCESS MODAL */}
+      <AnimatePresence>
+        {hasLeftQueue && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-white" />
+
+            {/* Content */}
+            <motion.div
+              className="relative text-center px-8"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <motion.div
+                className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-8"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 25 }}
+              >
+                <Check className="w-12 h-12 text-neutral-600" />
+              </motion.div>
+
+              <motion.h2
+                className="text-2xl font-bold text-neutral-900 mb-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                You've Left the Queue
+              </motion.h2>
+
+              <motion.p
+                className="text-neutral-500 mb-8 max-w-sm mx-auto"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                Your spot has been released. You can check in again anytime at the clinic.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Button
+                  onClick={() => window.close()}
+                  className="h-14 px-10 text-base font-semibold rounded-2xl"
+                >
+                  Close
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* FOOTER */}
       <footer className="border-t border-neutral-200 bg-white">
