@@ -25,15 +25,15 @@ export function Logo({ variant = 'combined', className }: LogoProps) {
 
   if (variant === 'wordmark') {
     return (
-      <div className={cn('flex items-center justify-center', className)}>
+      <div className={cn('flex items-center justify-center -my-2', className)}>
         <Image
-          src="/fountain-wordmark.svg"
+          src="/fountain-logo.png"
           alt="Fountain"
-          width={200}
-          height={60}
+          width={100}
+          height={100}
           priority
           unoptimized
-          className="select-none"
+          className="select-none -my-3"
         />
       </div>
     )

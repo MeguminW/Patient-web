@@ -21,8 +21,8 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata: Metadata = {
-  title: 'Fountain Kiosk | Check-In',
-  description: 'Self-service check-in kiosk for walk-in clinics',
+  title: 'Queue Status | Fountain Health',
+  description: 'Track your position in the clinic queue',
   manifest: '/manifest.json',
 }
 
