@@ -8,14 +8,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
 
 type Step = 1 | 2 | 3
+type InsuranceType = 'ontario-health-card' | 'private-insurance' | 'none'
 
 interface FormData {
   // Step 1: Personal Information
   fullName: string
   dateOfBirth: string
+  insuranceType: InsuranceType
   healthCard: string
   phone: string
   email: string
@@ -38,6 +41,7 @@ export default function IntakePage() {
   const [formData, setFormData] = useState<FormData>({
     fullName: 'Shiba Wang',
     dateOfBirth: '',
+    insuranceType: 'ontario-health-card',
     healthCard: '',
     phone: '(519) 123-4567',
     email: '',
@@ -95,6 +99,11 @@ export default function IntakePage() {
 
   const canProceed = () => {
     if (currentStep === 1) {
+      // If insurance type is 'none', health card is not required
+      if (formData.insuranceType === 'none') {
+        return formData.fullName && formData.dateOfBirth && formData.phone
+      }
+      // Otherwise, health card is required
       return formData.fullName && formData.dateOfBirth && formData.healthCard && formData.phone
     }
     if (currentStep === 2) {
@@ -204,19 +213,55 @@ export default function IntakePage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="healthCard" className="text-sm font-semibold text-black mb-1.5 block">
-                      Ontario Health Card Number <span className="text-red-500">*</span>
+                    <Label htmlFor="insuranceType" className="text-sm font-semibold text-black mb-1.5 block">
+                      Insurance Type <span className="text-red-500">*</span>
                     </Label>
-                    <Input
-                      id="healthCard"
-                      value={formData.healthCard}
-                      onChange={(e) => handleHealthCardChange(e.target.value)}
-                      placeholder="1234-567-890"
-                      maxLength={12}
-                      className="h-12"
-                    />
-                    <p className="text-xs text-neutral-500 mt-1.5">Format: XXXX-XXX-XXX</p>
+                    <Select
+                      value={formData.insuranceType}
+                      onValueChange={(value: InsuranceType) => {
+                        updateField('insuranceType', value)
+                        // Clear health card when switching to 'none'
+                        if (value === 'none') {
+                          updateField('healthCard', '')
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="insuranceType">
+                        <SelectValue placeholder="Select insurance type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ontario-health-card">Ontario Health Card</SelectItem>
+                        <SelectItem value="private-insurance">Private Insurance</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {formData.insuranceType !== 'none' && (
+                    <div>
+                      <Label htmlFor="healthCard" className="text-sm font-semibold text-black mb-1.5 block">
+                        {formData.insuranceType === 'ontario-health-card' ? 'Health Card Number' : 'Insurance Number'} <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="healthCard"
+                        value={formData.healthCard}
+                        onChange={(e) => {
+                          // Only format for Ontario Health Card
+                          if (formData.insuranceType === 'ontario-health-card') {
+                            handleHealthCardChange(e.target.value)
+                          } else {
+                            updateField('healthCard', e.target.value)
+                          }
+                        }}
+                        placeholder={formData.insuranceType === 'ontario-health-card' ? '1234-567-890' : 'Enter insurance number'}
+                        maxLength={formData.insuranceType === 'ontario-health-card' ? 12 : undefined}
+                        className="h-12"
+                      />
+                      {formData.insuranceType === 'ontario-health-card' && (
+                        <p className="text-xs text-neutral-500 mt-1.5">Format: XXXX-XXX-XXX</p>
+                      )}
+                    </div>
+                  )}
 
                   <div>
                     <Label htmlFor="phone" className="text-sm font-semibold text-black mb-1.5 block">
@@ -386,9 +431,21 @@ export default function IntakePage() {
                         <span className="text-black font-medium">{formData.dateOfBirth}</span>
                       </div>
                       <div>
-                        <span className="text-neutral-500">Health Card:</span>{' '}
-                        <span className="text-black font-medium">{formData.healthCard}</span>
+                        <span className="text-neutral-500">Insurance:</span>{' '}
+                        <span className="text-black font-medium">
+                          {formData.insuranceType === 'ontario-health-card' && 'Ontario Health Card'}
+                          {formData.insuranceType === 'private-insurance' && 'Private Insurance'}
+                          {formData.insuranceType === 'none' && 'None'}
+                        </span>
                       </div>
+                      {formData.healthCard && (
+                        <div>
+                          <span className="text-neutral-500">
+                            {formData.insuranceType === 'ontario-health-card' ? 'Health Card:' : 'Insurance Number:'}
+                          </span>{' '}
+                          <span className="text-black font-medium">{formData.healthCard}</span>
+                        </div>
+                      )}
                       <div>
                         <span className="text-neutral-500">Phone:</span>{' '}
                         <span className="text-black font-medium">{formData.phone}</span>
