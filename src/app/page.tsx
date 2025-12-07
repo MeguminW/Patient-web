@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '@/components/shared/Logo'
 import { Button } from '@/components/ui/button'
 import { ChevronDown, MapPin, Clock, Phone } from 'lucide-react'
 
-export default function QueueStatusPage() {
+function QueueStatusContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -316,5 +316,19 @@ export default function QueueStatusPage() {
         </p>
       </footer>
     </motion.main>
+  )
+}
+
+export default function QueueStatusPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse text-neutral-400">Loading...</div>
+        </div>
+      </div>
+    }>
+      <QueueStatusContent />
+    </Suspense>
   )
 }
