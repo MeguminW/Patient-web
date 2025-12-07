@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkInSchema } from '@/lib/validations'
 import { PATIENT_WEB_URL, SMS_TEMPLATES } from '@/lib/constants'
 
+// Ensure this runs as a Node function (not edge) and stays dynamic on Netlify
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 /**
  * POST /api/check-in
  * Process patient check-in and send SMS
