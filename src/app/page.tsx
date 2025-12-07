@@ -11,10 +11,10 @@ function QueueStatusContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Demo data - initial state: #5 with 4 people ahead
+  // Fixed demo data - always #5 with 4 people ahead, 45min wait
   const [queueData, setQueueData] = useState({
     queueNumber: 5,
-    estimatedWait: 35,
+    estimatedWait: 45,
     patientsAhead: 4,
     status: 'waiting' as 'waiting' | 'almost' | 'ready',
     intakeCompleted: false,
@@ -29,38 +29,6 @@ function QueueStatusContent() {
   }, [searchParams])
 
   const [showClinicInfo, setShowClinicInfo] = useState(false)
-  const [lastUpdated, setLastUpdated] = useState(new Date())
-
-  // Simulate real-time updates every 30 seconds - advance queue position
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLastUpdated(new Date())
-      setQueueData(prev => {
-        // Advance queue position
-        if (prev.patientsAhead > 0) {
-          const newPatientsAhead = prev.patientsAhead - 1
-          const newEstimatedWait = Math.max(5, prev.estimatedWait - 8)
-
-          // Determine new status
-          let newStatus: 'waiting' | 'almost' | 'ready' = 'waiting'
-          if (newPatientsAhead === 1) {
-            newStatus = 'almost'
-          } else if (newPatientsAhead === 0) {
-            newStatus = 'ready'
-          }
-
-          return {
-            ...prev,
-            patientsAhead: newPatientsAhead,
-            estimatedWait: newEstimatedWait,
-            status: newStatus,
-          }
-        }
-        return prev
-      })
-    }, 30000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Status-based styling
   const getStatusConfig = () => {
@@ -383,55 +351,6 @@ function QueueStatusContent() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Last Updated Indicator */}
-          <motion.div
-            className="text-center py-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.4 }}
-          >
-            <p className="text-xs text-neutral-400">
-              Status updates every 30 seconds
-            </p>
-          </motion.div>
-
-          {/* DEMO STATE SWITCHING BUTTONS */}
-          <motion.div
-            className="bg-neutral-100 rounded-xl p-4 border border-neutral-200"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.4 }}
-          >
-            <p className="text-xs font-semibold text-neutral-500 mb-3 text-center uppercase tracking-wider">
-              Demo Controls
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                onClick={() => setQueueData({ queueNumber: 5, estimatedWait: 35, patientsAhead: 4, status: 'waiting', intakeCompleted: false })}
-                variant="outline"
-                size="sm"
-                className="text-xs h-9"
-              >
-                Waiting
-              </Button>
-              <Button
-                onClick={() => setQueueData({ queueNumber: 2, estimatedWait: 15, patientsAhead: 1, status: 'almost', intakeCompleted: false })}
-                variant="outline"
-                size="sm"
-                className="text-xs h-9"
-              >
-                Almost
-              </Button>
-              <Button
-                onClick={() => setQueueData({ queueNumber: 1, estimatedWait: 5, patientsAhead: 0, status: 'ready', intakeCompleted: false })}
-                variant="outline"
-                size="sm"
-                className="text-xs h-9"
-              >
-                Ready
-              </Button>
-            </div>
-          </motion.div>
         </div>
       </div>
 
